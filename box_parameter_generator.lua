@@ -28,7 +28,16 @@ for _, frame in ipairs(app.sprite.frames) do
                     if tagName ~= tag.name then
                         tagName = tag.name
                         hitCont = 1
-                        print("\n")
+                        
+                        arr = {}
+                        for i = tag.fromFrame.frameNumber-1, tag.toFrame.frameNumber-1 do arr[i] = 0 end
+                        fList = table.concat(arr, ", ", tag.fromFrame.frameNumber-1, tag.toFrame.frameNumber-1)
+
+                        print(
+                            "\n\n#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_S " .. tostring(tag.fromFrame.frameNumber -1)
+                            .."\n#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_E " .. tostring(tag.toFrame.frameNumber -1)
+                            .."\n#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_END " .. tostring(tag.toFrame.frameNumber - tag.fromFrame.frameNumber + 1)
+                            .."\n")
                     end
                 end
             end
