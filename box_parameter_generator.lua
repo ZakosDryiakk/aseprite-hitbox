@@ -34,12 +34,26 @@ for _, frame in ipairs(app.sprite.frames) do
             end
 
             local cel = layer:cel(frame)
-            print("#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
-                .. " (Rectangle){player->position.x + player->box.x/2 " .. string.format("%+.1ff", cel.bounds.x - math.floor(app.sprite.width/2)) .. string.format(" %+.1ff,", cel.bounds.width/2) 
-                .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y + player->box.y, "
-                .. string.format(" %.1ff,", cel.bounds.width)
-                .. string.format(" %.1ff", cel.bounds.height)
-                .. "}")
+            local posOffsetX = cel.bounds.x + cel.bounds.width/2 - math.floor(app.sprite.width/2)
+            local boxHalfWidth = cel.bounds.width/2
+            local posOffsetY = cel.bounds.y - app.sprite.height
+
+            if posOffsetX >= 0 then
+                print("#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
+                    .. " (Rectangle){player->position.x + player->box.x/2 + " .. string.format("(%.1ff", posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
+                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y + player->box.y, "
+                    .. string.format(" %.1ff,", cel.bounds.width)
+                    .. string.format(" %.1ff", cel.bounds.height)
+                    .. "}")
+            else
+                print("#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
+                    .. " (Rectangle){player->position.x + player->box.x/2 - " .. string.format("(%.1ff", -posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
+                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y + player->box.y, "
+                    .. string.format(" %.1ff,", cel.bounds.width)
+                    .. string.format(" %.1ff", cel.bounds.height)
+                    .. "}")
+            end
+
 
         end
     end
