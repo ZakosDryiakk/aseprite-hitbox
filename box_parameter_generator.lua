@@ -49,15 +49,15 @@ for _, frame in ipairs(app.sprite.frames) do
 
             if posOffsetX >= 0 then
                 print("#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
-                    .. " (Rectangle){player->position.x + player->box.x/2 + " .. string.format("(%.1ff", posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
-                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y + player->box.y, "
+                    .. " (Rectangle){player->position.x + " .. string.format("(%.1ff", posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
+                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
                     .. string.format(" %.1ff,", cel.bounds.width)
                     .. string.format(" %.1ff", cel.bounds.height)
                     .. "}")
             else
                 print("#define " .. string.upper(character) .. "_" .. string.upper(tagName) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
-                    .. " (Rectangle){player->position.x + player->box.x/2 - " .. string.format("(%.1ff", -posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
-                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y + player->box.y, "
+                    .. " (Rectangle){player->position.x - " .. string.format("(%.1ff", -posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
+                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
                     .. string.format(" %.1ff,", cel.bounds.width)
                     .. string.format(" %.1ff", cel.bounds.height)
                     .. "}")
