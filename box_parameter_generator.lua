@@ -106,21 +106,21 @@ for _, frame in ipairs(app.sprite.frames) do
 
             local cel = layer:cel(frame)
             local posOffsetX = cel.bounds.x + cel.bounds.width/2 - math.floor(app.sprite.width/2)
-            local boxHalfWidth = cel.bounds.width/2
+            local boxHalfWidth = cel.bounds.width/2 + 0.5
             local posOffsetY = cel.bounds.y - app.sprite.height
 
             if posOffsetX >= 0 then
                 print(
                     "#define " .. string.upper(character) .. "_" .. string.upper(currTag.name) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
                     .. " (Rectangle){player->position.x + " .. string.format("(%.1ff", posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth)
-                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
+                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height + 1) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
                     .. string.format(" %.1ff,", cel.bounds.width)
                     .. string.format(" %.1ff", cel.bounds.height)
                     .. "}")
             else
                 print("#define " .. string.upper(character) .. "_" .. string.upper(currTag.name) .. "_HIT" .. hitCont .. "_" .. string.sub(layer.name, -1)
                     .. " (Rectangle){player->position.x - " .. string.format("(%.1ff", -posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
-                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
+                    .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height + 1) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
                     .. string.format(" %.1ff,", cel.bounds.width)
                     .. string.format(" %.1ff", cel.bounds.height)
                     .. "}")
@@ -129,16 +129,40 @@ for _, frame in ipairs(app.sprite.frames) do
     end
 end
 
-print("\n\n// Hurtboxes \n//\n//First number is the hurtbox layer, from lowest-positioned hurtbox to highest, second number is the step\n//")
+print("\n\n// Hurtboxes \n//\n//First number is the step, second number is the hurtbox layer, from lowest-positioned hurtbox to highest\n//")
+print("// Hurtbox arrays are set per layer, not per frame\n")
 
 for _, layer in ipairs(parameters.layers) do
     if string.find(layer.name, "(Hurtbox)") ~= nil then
         for _, tag in ipairs(tags) do
-            print("\n#define " .. string.upper(character) .. "_" .. string.upper(tag.name) .. "_HURT" .. string.sub(layer.name, -1) .. " { \\")
+            local empty = true
+            local frame = tag.fromFrame
+
+            while frame.frameNumber <= tag.toFrame.frameNumber do
+                if layer:cel(frame) ~= nil then
+                    empty = false
+                    break
+                end
+                -- Checking for the last tag
+                if frame.next ~= nil then
+                    frame = frame.next
+                else
+                    break
+                end
+            end
+
+            if empty then
+                goto continue
+            end
+
+            print("\n#define " .. string.upper(character) .. "_" .. string.upper(tag.name) .. "_HURT" .. string.sub(layer.name, -1) .. " (Rectangle[]){ \\")
             for i = tag.fromFrame.frameNumber, tag.toFrame.frameNumber do
-                print(string.upper(character) .. "_" .. string.upper(tag.name) .. "_HURT" .. string.sub(layer.name, -1) .. "_" .. tostring(i - tag.fromFrame.frameNumber + 1) .. ", \\")
+                if layer:cel(i) ~= nil then
+                print(string.upper(character) .. "_" .. string.upper(tag.name) .. "_HURT" .. tostring(i - tag.fromFrame.frameNumber + 1) .. "_" .. string.sub(layer.name, -1) .. ", \\")
+                end
             end
             print("}\n")
+            ::continue::
         end
     end
 end
@@ -157,21 +181,21 @@ for _, frame in ipairs(app.sprite.frames) do
 
             local cel = layer:cel(frame)
             local posOffsetX = cel.bounds.x + cel.bounds.width/2 - math.floor(app.sprite.width/2)
-            local boxHalfWidth = cel.bounds.width/2
+            local boxHalfWidth = cel.bounds.width/2 + 0.5
             local posOffsetY = cel.bounds.y - app.sprite.height
 
             if posOffsetX >= 0 then
                 print(
-                    "#define " .. string.upper(character) .. "_" .. string.upper(currTag.name) .. "_HURT" .. string.sub(layer.name, -1) .. "_" .. frame.frameNumber - currTag.fromFrame.frameNumber
+                    "#define " .. string.upper(character) .. "_" .. string.upper(currTag.name) .. "_HURT" .. frame.frameNumber - currTag.fromFrame.frameNumber + 1 .. "_" .. string.sub(layer.name, -1) 
                     .. " (Rectangle){player->position.x + " .. string.format("(%.1ff", posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth)
-                        .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
+                        .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height + 1) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
                         .. string.format(" %.1ff,", cel.bounds.width)
                         .. string.format(" %.1ff", cel.bounds.height)
                     .. "}")
             else
-                print("#define " .. string.upper(character) .. "_" .. string.upper(currTag.name) .. "_HURT" .. string.sub(layer.name, -1) .. "_" .. frame.frameNumber - currTag.fromFrame.frameNumber
+                print("#define " .. string.upper(character) .. "_" .. string.upper(currTag.name) .. "_HURT" .. frame.frameNumber - currTag.fromFrame.frameNumber + 1 .. "_" .. string.sub(layer.name, -1) 
                     .. " (Rectangle){player->position.x - " .. string.format("(%.1ff", -posOffsetX) .. "*player->side) - " .. string.format("%.1ff,", boxHalfWidth) 
-                        .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
+                        .. string.format(" %+.1ff ", cel.bounds.y - app.sprite.height + 1) .. "+ player->position.y - " .. string.upper(character) .. "_SPRITE_OFFSET_Y, "
                         .. string.format(" %.1ff,", cel.bounds.width)
                         .. string.format(" %.1ff", cel.bounds.height)
                     .. "}")
